@@ -1,0 +1,29 @@
+service: serverless-bolt-js
+frameworkVersion: '2'
+useDotenv: true
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+  region: ap-northeast-1
+  profile: private
+  environment:
+    SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
+    SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'lambda:InvokeFunction'
+      Resource:
+        - '*'
+functions:
+  slack:
+    handler: main.handler
+    events:
+      - http:
+          path: slack/events
+          method: post
+  hello:
+    handler: main.hello
+plugins:
+  - serverless-offline
