@@ -79,14 +79,13 @@ module.exports.hello = async (event) => {
 
 const buildBlock = (resultObj) => {
   block = [];
-  let i = 1;
   for (user of resultObj) {
     block.push(
       {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `${i}位: *<https://note.com/${user.name}|${user.name}>*\n投稿数: ${user.count}`,
+          "text": `*<https://note.com/${user.name}|${user.name}>*\n投稿数: ${user.count}`,
         },
         "accessory": {
           "type": "image",
@@ -98,7 +97,6 @@ const buildBlock = (resultObj) => {
         "type": "divider"
       }
     );
-    i += 1;
   }
   return block;
 };
