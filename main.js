@@ -1,6 +1,7 @@
 const { App, ExpressReceiver } = require("@slack/bolt");
 const awsServerlessExpress = require("aws-serverless-express");
 const fetcher = require("./noteCountFetcher");
+const profile = require("./profile");
 
 // Initialize your custom receiver
 const expressReceiver = new ExpressReceiver({
@@ -45,10 +46,28 @@ app.message("ランキングくれ", async ({ message, say, body }) => {
 module.exports.hello = async (event) => {
   const result = await fetcher.getCountForEachUserInMagazine(event["magazineId"]);
 
+  for (const user of result) {
+    const imageUrl = await profile.getProfileImageUrl(user.name);
+    user.profileImageUrl = imageUrl;
+  }
+
   await app.client.chat.postMessage({
     token: process.env.SLACK_BOT_TOKEN,
     channel: event["channelId"],
-    text: `今こんな感じ :wave: \n ${JSON.stringify(result, null, 2)}`
+    text: `今月はこんな感じ :wave:`,
+    blocks: [
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `今月はこんな感じ :wave:`,
+        }
+      },
+      {
+        "type": "divider"
+      },
+      ...buildBlock(result)
+    ]
   });
 
 
@@ -56,6 +75,32 @@ module.exports.hello = async (event) => {
     statusCode: 200,
     body: ""
   };
+};
+
+const buildBlock = (resultObj) => {
+  block = [];
+  let i = 1;
+  for (user of resultObj) {
+    block.push(
+      {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `${i}位: *<https://note.com/${user.name}|${user.name}>*\n投稿数: ${user.count}`,
+        },
+        "accessory": {
+          "type": "image",
+          "image_url": `${user.profileImageUrl}`,
+          "alt_text": `${user.name} thumbnail`
+        }
+      },
+      {
+        "type": "divider"
+      }
+    );
+    i += 1;
+  }
+  return block;
 };
 
 // Handle the Lambda function event

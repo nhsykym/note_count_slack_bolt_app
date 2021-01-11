@@ -25,5 +25,6 @@ functions:
           method: post
   hello:
     handler: main.hello
+    timeout: 10
 plugins:
   - serverless-offline
