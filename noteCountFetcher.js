@@ -17,10 +17,6 @@ const fetchAllNotes = async (magazineId) => {
   return arr.flat();
 };
 
-const orderByCount = (users) => {
-  return users.sort((a, b) => { return b.count - a.count });
-};
-
 const getCountForEachUserInMagazine = async (magazineId) => {
   const contents = await fetchAllNotes(magazineId);
   let countForEachUser = [];
@@ -40,17 +36,19 @@ const getCountForEachUserInMagazine = async (magazineId) => {
       const user = countForEachUser.find((v) => v.name == urlname);
       if (user) {
         user.count += 1;
+        user.like += content.like_count
       } else {
         const newUser = {
           name: urlname,
-          count: 1
+          count: 1,
+          like: content.like_count
         };
         countForEachUser.push(newUser);
       }
     }
   }
 
-  return orderByCount(countForEachUser);
+  return countForEachUser;
 };
 
 exports.getCountForEachUserInMagazine = getCountForEachUserInMagazine;

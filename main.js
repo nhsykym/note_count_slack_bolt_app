@@ -22,11 +22,7 @@ const app = new App({
 // Initialize your AWSServerlessExpress server using Bolt"s ExpressReceiver
 const server = awsServerlessExpress.createServer(expressReceiver.app);
 
-
-// app.command("/note", async ({ command, ack, say, body }) => {
-app.message("ランキングくれ", async ({ message, say, body }) => {
-  // await ack();
-
+app.message("投稿数ランキングくれ", async ({ message, say, body }) => {
   let AWS = require("aws-sdk");
   let lambda = new AWS.Lambda();
 
@@ -36,7 +32,26 @@ app.message("ランキングくれ", async ({ message, say, body }) => {
     InvocationType: "Event",
     Payload: JSON.stringify({
       "magazineId": "m30aa4d96cb3c",
-      "channelId": body.event.channel
+      "channelId": body.event.channel,
+      "sortBy": "count"
+    })
+  }).promise();
+
+  await say("少々お待ちを〜");
+});
+
+app.message("いいね数ランキングくれ", async ({ message, say, body }) => {
+  let AWS = require("aws-sdk");
+  let lambda = new AWS.Lambda();
+
+  // 起動するだけ
+  const result = await lambda.invoke({
+    FunctionName: "serverless-bolt-js-dev-hello",
+    InvocationType: "Event",
+    Payload: JSON.stringify({
+      "magazineId": "m30aa4d96cb3c",
+      "channelId": body.event.channel,
+      "sortBy": "like"
     })
   }).promise();
 
@@ -66,7 +81,7 @@ module.exports.hello = async (event) => {
       {
         "type": "divider"
       },
-      ...buildBlock(result)
+      ...buildBlock(sortByKey(result, event["sortBy"]))
     ]
   });
 
@@ -77,6 +92,23 @@ module.exports.hello = async (event) => {
   };
 };
 
+const sortByKey = (users, sortBy) => {
+  let result;
+  switch (sortBy) {
+    case 'count':
+      result = users.sort((a, b) => { return b.count - a.count });
+      break;
+    case 'like':
+      result = users.sort((a, b) => { return b.like - a.like });
+      break;
+  
+    default:
+      result = users;
+      break;
+  }
+  return result;
+};
+
 const buildBlock = (resultObj) => {
   block = [];
   for (user of resultObj) {
@@ -85,7 +117,7 @@ const buildBlock = (resultObj) => {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `*<https://note.com/${user.name}|${user.name}>*\n投稿数: ${user.count}`,
+          "text": `*<https://note.com/${user.name}|${user.name}>*\n投稿数: ${user.count}\nいいね数: ${user.like}`,
         },
         "accessory": {
           "type": "image",
