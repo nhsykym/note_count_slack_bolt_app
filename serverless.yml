@@ -10,6 +10,7 @@ provider:
   environment:
     SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+    MAGAZINE_ID: ${env:MAGAZINE_ID}
   iamRoleStatements:
     - Effect: 'Allow'
       Action:

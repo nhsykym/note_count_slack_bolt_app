@@ -31,7 +31,7 @@ app.message("投稿数ランキングくれ", async ({ message, say, body }) => 
     FunctionName: "serverless-bolt-js-dev-hello",
     InvocationType: "Event",
     Payload: JSON.stringify({
-      "magazineId": "m30aa4d96cb3c",
+      "magazineId": process.env.MAGAZINE_ID,
       "channelId": body.event.channel,
       "sortBy": "count"
     })
@@ -49,13 +49,17 @@ app.message("いいね数ランキングくれ", async ({ message, say, body }) 
     FunctionName: "serverless-bolt-js-dev-hello",
     InvocationType: "Event",
     Payload: JSON.stringify({
-      "magazineId": "m30aa4d96cb3c",
+      "magazineId": process.env.MAGAZINE_ID,
       "channelId": body.event.channel,
       "sortBy": "like"
     })
   }).promise();
 
   await say("少々お待ちを〜");
+});
+
+app.event('app_mention', async ({ say, event, client }) => {
+  await say("うるせーバーカ:poop:");
 });
 
 module.exports.hello = async (event) => {
