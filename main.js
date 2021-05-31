@@ -42,8 +42,10 @@ app.command('/note', async ({ command, ack, say, body}) => {
       "dateStr": command.text
     })
   }).promise();
+
+  const targetMonth = command.text || '今月'
   
-  await say(`${command.text}に投稿したnoteのいいね数ランキングを取得中…`);
+  await say(`${targetMonth}のいいね数ランキングを取得中…`);
 });
 
 app.event('app_mention', async ({ say, event, client }) => {
