@@ -22,40 +22,28 @@ const app = new App({
 // Initialize your AWSServerlessExpress server using Bolt"s ExpressReceiver
 const server = awsServerlessExpress.createServer(expressReceiver.app);
 
-app.message("投稿数ランキングくれ", async ({ message, say, body }) => {
+app.command('/note', async ({ command, ack, say, body}) => {
+  await ack();
+  
   let AWS = require("aws-sdk");
   let lambda = new AWS.Lambda();
-
+  
+  console.log(JSON.stringify(body));
+  console.log(JSON.stringify(body.channel_id));
+  
   // 起動するだけ
   const result = await lambda.invoke({
     FunctionName: "serverless-bolt-js-dev-hello",
     InvocationType: "Event",
     Payload: JSON.stringify({
       "magazineId": process.env.MAGAZINE_ID,
-      "channelId": body.event.channel,
-      "sortBy": "count"
+      "channelId": body.channel_id,
+      "sortBy": "like",
+      "dateStr": command.text
     })
   }).promise();
-
-  await say("少々お待ちを〜");
-});
-
-app.message("いいね数ランキングくれ", async ({ message, say, body }) => {
-  let AWS = require("aws-sdk");
-  let lambda = new AWS.Lambda();
-
-  // 起動するだけ
-  const result = await lambda.invoke({
-    FunctionName: "serverless-bolt-js-dev-hello",
-    InvocationType: "Event",
-    Payload: JSON.stringify({
-      "magazineId": process.env.MAGAZINE_ID,
-      "channelId": body.event.channel,
-      "sortBy": "like"
-    })
-  }).promise();
-
-  await say("少々お待ちを〜");
+  
+  await say(`${command.text}に投稿したnoteのいいね数ランキングを取得中…`);
 });
 
 app.event('app_mention', async ({ say, event, client }) => {
@@ -63,7 +51,7 @@ app.event('app_mention', async ({ say, event, client }) => {
 });
 
 module.exports.hello = async (event) => {
-  const result = await fetcher.getCountForEachUserInMagazine(event["magazineId"]);
+  const result = await fetcher.getMonthlyCountForEachUserInMagazine(event["magazineId"], event["dateStr"]);
 
   for (const user of result) {
     const imageUrl = await profile.getProfileImageUrl(user.name);
@@ -73,13 +61,13 @@ module.exports.hello = async (event) => {
   await app.client.chat.postMessage({
     token: process.env.SLACK_BOT_TOKEN,
     channel: event["channelId"],
-    text: `今月はこんな感じ :wave:`,
+    text: `こんな感じ :wave:`,
     blocks: [
       {
         "type": "section",
         "text": {
           "type": "mrkdwn",
-          "text": `今月はこんな感じ :wave:`,
+          "text": `こんな感じ :wave:`,
         }
       },
       {

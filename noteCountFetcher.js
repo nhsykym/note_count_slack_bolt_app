@@ -17,22 +17,18 @@ const fetchAllNotes = async (magazineId) => {
   return arr.flat();
 };
 
-const getCountForEachUserInMagazine = async (magazineId) => {
+const getMonthlyCountForEachUserInMagazine = async (magazineId, dateStr) => {
   const contents = await fetchAllNotes(magazineId);
   let countForEachUser = [];
 
-  // monthは0~11
-  const today = new Date();
-  const dateFrom = new Date(today.getFullYear(), today.getMonth(), 1);
-  const dateTo = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
-  console.log(dateFrom);
-  console.log(dateTo);
+  // "YYYY-MM"の形式で入力される
+  const dateFrom = new Date(dateStr);
+  const dateTo = new Date(dateFrom.getFullYear(), dateFrom.getMonth() + 1, 1);
 
   for (let content of contents) {
     const urlname = content.user.urlname;
     const publishAt = new Date(content.publish_at);
-    if (dateFrom <= publishAt && publishAt <= dateTo) {
+    if (dateFrom <= publishAt && publishAt < dateTo) {
       const user = countForEachUser.find((v) => v.name == urlname);
       if (user) {
         user.count += 1;
@@ -51,4 +47,4 @@ const getCountForEachUserInMagazine = async (magazineId) => {
   return countForEachUser;
 };
 
-exports.getCountForEachUserInMagazine = getCountForEachUserInMagazine;
+exports.getMonthlyCountForEachUserInMagazine = getMonthlyCountForEachUserInMagazine;
