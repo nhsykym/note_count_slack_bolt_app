@@ -24,13 +24,13 @@ const server = awsServerlessExpress.createServer(expressReceiver.app);
 
 app.command('/note', async ({ command, ack, say, body}) => {
   await ack();
-  
+
   let AWS = require("aws-sdk");
   let lambda = new AWS.Lambda();
-  
+
   console.log(JSON.stringify(body));
   console.log(JSON.stringify(body.channel_id));
-  
+
   // 起動するだけ
   const result = await lambda.invoke({
     FunctionName: "serverless-bolt-js-dev-hello",
@@ -44,8 +44,28 @@ app.command('/note', async ({ command, ack, say, body}) => {
   }).promise();
 
   const targetMonth = command.text || '今月'
-  
+
   await say(`${targetMonth}のいいね数ランキングを取得中…`);
+});
+
+app.command('/divide', async ({ command, ack, say }) => {
+  await ack();
+
+  // TODO: ここでチャンネルのメンバーを取得する
+  members = [
+  ];
+
+  console.log(members);
+
+  const team_a = getRandomSubarray(members, 4);
+  const team_b = members.filter((member) => {
+    return !team_a.includes(member);
+  });
+
+  console.log(team_a);
+  console.log(team_b);
+
+  await say(`TeamA: ${team_a.join(', ')}\nTeamB: ${team_b.join(', ')}`);
 });
 
 app.event('app_mention', async ({ say, event, client }) => {
@@ -95,7 +115,7 @@ const sortByKey = (users, sortBy) => {
     case 'like':
       result = users.sort((a, b) => { return b.like - a.like });
       break;
-  
+
     default:
       result = users;
       break;
@@ -125,6 +145,20 @@ const buildBlock = (resultObj) => {
     );
   }
   return block;
+};
+
+const getRandomSubarray = (arr, size) => {
+  let shuffled = arr.slice(0);
+  let i = arr.length;
+  let temp, index;
+
+  while (i--) {
+      index = Math.floor((i + 1) * Math.random());
+      temp = shuffled[index];
+      shuffled[index] = shuffled[i];
+      shuffled[i] = temp;
+  }
+  return shuffled.slice(0, size);
 };
 
 // Handle the Lambda function event
